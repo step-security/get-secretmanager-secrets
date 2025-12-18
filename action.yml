@@ -1,0 +1,118 @@
+# Copyright 2020 Google LLC
+# Copyright 2025 StepSecurity
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: 'Get Secret Manager secrets'
+author: 'step-security'
+description: |-
+  Get secrets from Google Secret Manager and make their results available as
+  output variables.
+
+inputs:
+  secrets:
+    description: |-
+      List of secrets to access and inject into the environment. These are
+      comma-separated or newline-separated `OUTPUTNAME:SECRET`. Output names or
+      secret names that contain separators must be escaped with a backslash
+      (e.g. `\,` or `\\n`) unless quoted. Any leading or trailing whitespace is
+      trimmed unless values are quoted.
+
+      ```yaml
+      secrets: |-
+        output1:my-project/my-secret1
+        output2:my-project/my-secret2
+      ```
+
+      Secrets can be referenced using the following formats:
+
+      ```text
+      # Long form
+      projects/<project-id>/secrets/<secret-id>/versions/<version-id>
+
+      # Long form - "latest" version
+      projects/<project-id>/secrets/<secret-id>
+
+      # Short form
+      <project-id>/<secret-id>/<version-id>
+
+      # Short form - "latest" version
+      <project-id>/<secret-id>
+      ```
+    required: true
+
+  min_mask_length:
+    description: |-
+      Minimum line length for a secret to be masked. Extremely short secrets
+      (e.g. `{` or `a`) can make GitHub Actions log output unreadable. This is
+      especially important for multi-line secrets, since each line of the secret
+      is masked independently.
+    required: false
+    default: '4'
+
+  export_to_environment:
+    description: |-
+      Make the fetched secrets additionally available as environment variables.
+    required: false
+    default: false
+
+  encoding:
+    description: |-
+      Encoding in which secrets will be exported into outputs (and environment
+      variables if `export_to_environment` is true). For secrets that cannot be
+      represented in text, such as encryption key bytes, choose an encoding that
+      has a safe character such as `base64` or `hex`. For more information about
+      available encoding types, please see the [Node.js Buffer and character
+      encodings](https://nodejs.org/docs/latest/api/buffer.html#buffers-and-character-encodings).
+    required: false
+    default: 'utf8'
+
+  universe:
+    description: |-
+      The Google Cloud universe to use for constructing API endpoints. The
+      default universe is "googleapis.com", which corresponds to
+      https://cloud.google.com. Trusted Partner Cloud and Google Distributed
+      Hosted Cloud should set this to their universe address.
+    required: false
+    default: 'googleapis.com'
+
+outputs:
+  secrets:
+    description: |-
+      Each secret is prefixed with an output name. The secret's resolved access
+      value will be available at that output in future build steps. For example:
+
+      ```yaml
+      jobs:
+        job_id:
+          steps:
+          - id: 'secrets'
+            uses: 'step-security/google-github-auth@v3'
+            with:
+              secrets: |-
+                token:my-project/docker-registry-token
+      ```
+
+      will be available in future steps as the output:
+
+      ```text
+      steps.secrets.outputs.token
+      ```
+
+branding:
+  icon: 'lock'
+  color: 'blue'
+
+runs:
+  using: 'node24'
+  main: 'dist/main/index.js'
