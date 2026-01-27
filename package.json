@@ -28,7 +28,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@actions/http-client": "^2.2.3",
+    "@actions/http-client": "^3.0.1",
     "@google-github-actions/actions-utils": "^1.0.1",
     "axios": "^1.13.2",
     "google-auth-library": "^10.1.0"
